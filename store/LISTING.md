@@ -1,10 +1,14 @@
-# Chrome Web Store submission: Pagewright 1.0.0
+# Chrome Web Store submission: Pagewright 1.0.1
+
+Item ID: `okaikhpiadgbeglkkkkbijanhpebbgdf`
+
+> 1.0.0 was rejected (Yellow Argon: "excessive keywords") for naming other AI products in the description. Don't list third-party app names anywhere in the listing, summary or images.
 
 Everything needed for the [Developer Dashboard](https://chrome.google.com/webstore/devconsole), in the order the tabs appear. Rebuild the package with `npm run build:store`, and the images with `npm run store:assets` (requires `BROWSER_BIN`, see the README).
 
 ## 1. Package
 
-Upload **`dist/pagewright-1.0.0.zip`**.
+Upload **`dist/pagewright-1.0.1.zip`**.
 
 The store build is the same as the GitHub build except that `browser_evaluate` (running arbitrary JavaScript sent by the agent) is disabled, so the package runs only code it ships with.
 
@@ -12,7 +16,7 @@ The store build is the same as the GitHub build except that `browser_evaluate` (
 
 **Title** (taken from the manifest): `Pagewright – AI Browser Control & Scraping (MCP)`
 
-**Summary** (taken from the manifest, 126/132 chars): `Let AI agents (Claude Code, Cursor, any MCP client) use your browser: read pages, click, screenshot, fix layouts, scrape data.`
+**Summary** (taken from the manifest, 117/132 chars): `Let AI agents use your browser through MCP: read pages, click, type, take screenshots, debug layouts and scrape data.`
 
 **Category:** Developer Tools
 
@@ -21,7 +25,7 @@ The store build is the same as the GitHub build except that `browser_evaluate` (
 **Description** (paste as is):
 
 ```
-Pagewright connects your browser to AI agents through the Model Context Protocol (MCP). Claude Code, Claude Desktop, Cursor, Windsurf, VS Code and any other MCP client can read pages, click, type and take screenshots in the browser you already use, with your existing logins.
+Pagewright connects your browser to AI agents through the Model Context Protocol (MCP). Any AI app that supports MCP can read pages, click, type and take screenshots in the browser you already use, with your existing logins.
 
 WHAT YOUR AGENT CAN DO
 • Read any page as a compact outline of headings, text and interactive elements, each with a short reference the agent can click or type into
@@ -50,7 +54,7 @@ PRIVATE BY DESIGN
 SETUP (about a minute)
 1. Install Node.js 18 or newer.
 2. Run: npx -y github:zamansheikh/browser-mcp setup
-   This installs the local MCP server and registers it with Claude Code. For other apps it prints the configuration to paste.
+   This installs the local MCP server and shows how to add it to your AI app.
 3. Restart your AI app and ask it to run browser_status.
 
 Pagewright is open source (MIT): https://github.com/zamansheikh/browser-mcp
@@ -77,7 +81,7 @@ Note: pages built into the browser (chrome:// pages and the Chrome Web Store) ca
 **Single purpose description:**
 
 ```
-Pagewright lets an AI application running on the user's own computer (an MCP client such as Claude Code or Cursor) read and operate the user's browser tabs: reading page content, taking screenshots, clicking and typing, inspecting layout and styles for web development, and extracting data from pages. It communicates only with a local server on 127.0.0.1 that the user installs and runs.
+Pagewright lets an AI application running on the user's own computer (an MCP client) read and operate the user's browser tabs: reading page content, taking screenshots, clicking and typing, inspecting layout and styles for web development, and extracting data from pages. It communicates only with a local server on 127.0.0.1 that the user installs and runs.
 ```
 
 **Permission justifications:**

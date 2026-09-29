@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Pagewright – AI Browser Control & Scraping (MCP)",
   "short_name": "Pagewright",
-  "version": "1.0.0",
-  "description": "Let AI agents (Claude Code, Cursor, any MCP client) use your browser: read pages, click, screenshot, fix layouts, scrape data.",
+  "version": "1.0.1",
+  "description": "Let AI agents use your browser through MCP: read pages, click, type, take screenshots, debug layouts and scrape data.",
   "homepage_url": "https://github.com/zamansheikh/browser-mcp",
   "minimum_chrome_version": "120",
   "permissions": [

@@ -131,7 +131,7 @@ try {
 
   // 1. Hero
   const snapLines = snap.split('\n').filter((l) => /heading|button "Add"|link "Next|price|text: \$/.test(l)).slice(0, 9).map((l) => l.replace(/^\s{0,4}/, ''));
-  const hero = shell('hero', lead('Let your AI agent use your real browser', 'Claude Code, Cursor and any MCP client can read, click, type and screenshot — in the browser you are already logged into.', [
+  const hero = shell('hero', lead('Let your AI agent use your real browser', 'Any AI app that supports MCP can read, click, type and take screenshots in the browser you are already logged into.', [
     'Works with any MCP-compatible AI app', 'Your sessions and cookies, no extra login', 'Runs locally: nothing leaves your machine except to your own agent']),
     `<div class="browser" style="width:760px"><div class="bar"><i></i><i></i><i></i><div class="url">127.0.0.1 · Loom &amp; Leaf demo shop</div></div><img class="shot" src="/build/demo-desktop.png" alt=""></div>
      <div class="panel" style="position:absolute; left:-30px; bottom:10px; width:560px">
@@ -165,14 +165,10 @@ try {
      </div>`);
 
   // 4. Setup / multi-agent
-  const setup = shell('setup', lead('One command to connect', 'Install the local MCP server, add it to your AI app, and the extension connects automatically.', [
+  const setup = shell('setup', lead('Connected in a minute', 'Install the small local server with one command. The extension finds it automatically.', [
     'Several agents can share one browser', 'Only local connections are accepted', 'Release any tab from the popup at any time']),
     `<div style="display:grid; gap:22px; width:720px">
-       <div class="panel"><h3>Terminal</h3><pre><span class="m">$</span> npx -y github:zamansheikh/browser-mcp setup
-  <span class="ok">✓</span> files installed
-  <span class="ok">✓</span> registered with Claude Code as "browser" (all projects)
-
-<span class="m">$</span> npx -y github:zamansheikh/browser-mcp check
+       <div class="panel"><h3>Terminal</h3><pre><span class="m">$</span> npx -y github:zamansheikh/browser-mcp check
 ${esc(checkOut).replace(/… (ok|connected)/g, '… <span class="ok">$1</span>').replace(/(200)/, '<span class="n">$1</span>')}</pre></div>
        <div style="display:flex; gap:22px; align-items:flex-start">
          <div style="width:320px; background:#fff; color:#111827; border-radius:12px; padding:14px; font-size:13px; box-shadow:0 25px 60px rgba(0,0,0,.45)">
@@ -181,10 +177,10 @@ ${esc(checkOut).replace(/… (ok|connected)/g, '… <span class="ok">$1</span>')
            <div style="border-top:1px solid #e5e7eb; margin-top:12px; padding-top:10px; color:#6b7280; font-size:12px; text-transform:uppercase; letter-spacing:.04em">Controlled tabs</div>
            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px"><span>Home goods · Loom &amp; Leaf</span><span style="border:1px solid #e5e7eb; border-radius:6px; padding:2px 8px; font-size:12px">Release</span></div>
          </div>
-         <div class="panel" style="flex:1"><h3>Works with</h3><pre>Claude Code
-Claude Desktop
-Cursor · Windsurf · VS Code
-any MCP client</pre></div>
+         <div class="panel" style="flex:1"><h3>Private by design</h3><pre>Local connection only (127.0.0.1)
+Websites cannot connect
+No analytics or tracking
+Open source, MIT licensed</pre></div>
        </div>
      </div>`);
 
