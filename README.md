@@ -179,6 +179,8 @@ flowchart LR
 
 ## Configuration
 
+Pass `--port PORT` to `browser-mcp` or `browser-mcp check` to override the environment variable. The command-line flag takes precedence over `BROWSER_MCP_PORT`.
+
 | Variable | Default | Purpose |
 |---|---|---|
 | `BROWSER_MCP_PORT` | `18800` | Hub port. Must match the port in the extension popup. |

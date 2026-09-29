@@ -3,8 +3,9 @@
 
 import { Bridge } from './bridge.js';
 
-export async function check() {
-  const port = Number(process.env.BROWSER_MCP_PORT) || 18800;
+export async function check(args = process.argv.slice(2)) {
+  const portIndex = args.indexOf('--port');
+  const port = Number(portIndex === -1 ? process.env.BROWSER_MCP_PORT : args[portIndex + 1]) || 18800;
   const bridge = new Bridge({ port, connectTimeout: 60000 });
   const step = (s) => process.stdout.write(s);
   step(`Starting on port ${port}… `);
