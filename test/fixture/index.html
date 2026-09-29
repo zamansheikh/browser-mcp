@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Fixture shop for browser-mcp tests">
+  <title>Fixture Shop</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">{"@type": "Store", "name": "Fixture Shop"}</script>
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="logo">Fixture Shop</a>
+    <nav aria-label="Main"><a href="/">Home</a> <a href="/page2.html">Page 2</a> <a href="/about">About</a></nav>
+  </header>
+  <main>
+    <h1>Products</h1>
+    <p class="faint">This paragraph has very low contrast.</p>
+    <div class="banner">This banner is wider than the screen and causes horizontal scrolling.</div>
+    <ul class="products">
+      <li class="product"><h2>Blue Mug</h2><span class="price">$12.50</span><a href="/p/blue-mug">View</a></li>
+      <li class="product"><h2>Red Kettle</h2><span class="price">$39.00</span><a href="/p/red-kettle">View</a></li>
+      <li class="product"><h2>Green Teapot</h2><span class="price">$24.99</span><a href="/p/green-teapot">View</a></li>
+    </ul>
+    <a class="next" href="/page2.html">Next page</a>
+
+    <form id="signup" onsubmit="event.preventDefault(); document.getElementById('result').textContent = 'Thanks ' + this.email.value + ' (' + this.plan.value + ', news=' + this.news.checked + ')';">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" placeholder="you@example.com">
+      <label for="plan">Plan</label>
+      <select id="plan" name="plan"><option value="free">Free</option><option value="pro">Pro</option></select>
+      <label><input type="checkbox" name="news"> Newsletter</label>
+      <button type="submit">Sign up</button>
+      <output id="result"></output>
+    </form>
+
+    <table class="specs"><thead><tr><th>Model</th><th>Watts</th></tr></thead>
+      <tbody><tr><td>K1</td><td>1500</td></tr><tr><td>K2</td><td>2200</td></tr></tbody></table>
+
+    <img src="/missing.png" alt="missing">
+    <img class="stretched" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='50'><rect width='100' height='50' fill='teal'/></svg>" width="100" height="100">
+    <div class="card"><div class="card-title">A title that is far too long to fit in this small card box</div></div>
+    <button class="icon-btn"></button>
+    <div id="later"></div>
+  </main>
+  <script>
+    console.log('fixture loaded', { items: 3 });
+    console.warn('this is a warning');
+    fetch('/api/products.json').then(r => r.json()).then(d => console.log('api', d.length));
+    setTimeout(() => { document.getElementById('later').innerHTML = '<p class="late">Loaded later</p>'; }, 800);
+    setTimeout(() => { throw new Error('boom from fixture'); }, 10);
+  </script>
+</body>
+</html>

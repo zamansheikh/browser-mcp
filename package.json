@@ -1,0 +1,45 @@
+{
+  "name": "browser-mcp",
+  "version": "0.1.0",
+  "description": "MCP server + browser extension that lets any AI agent see and control your real Chrome/Brave/Edge browser: snapshots, screenshots, clicks, layout audits, console/network, and web scraping.",
+  "type": "module",
+  "bin": {
+    "browser-mcp": "server/index.js"
+  },
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "icons": "node scripts/make-icons.mjs",
+    "test:e2e": "node test/e2e.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "ws": "^8.22.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zamansheikh/browser-mcp.git"
+  },
+  "homepage": "https://github.com/zamansheikh/browser-mcp#readme",
+  "author": "zamansheikh",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "browser",
+    "chrome-extension",
+    "claude",
+    "web-scraping",
+    "automation"
+  ],
+  "files": [
+    "server",
+    "extension",
+    "scripts",
+    "README.md",
+    "LICENSE"
+  ]
+}

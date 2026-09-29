@@ -1,0 +1,11 @@
+body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
+.site-header { display: flex; justify-content: space-between; align-items: center; }
+.faint { color: #ddd; }
+.banner { width: 1600px; background: #fde68a; padding: 8px; }
+.products { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; list-style: none; padding: 0; }
+.product { border: 1px solid #ccc; padding: 8px; }
+.price { font-weight: 700; }
+.card { width: 120px; height: 40px; overflow: hidden; border: 1px solid #999; }
+.card-title { width: 300px; }
+.icon-btn { width: 16px; height: 16px; }
+@media (max-width: 600px) { .products { grid-template-columns: 1fr; } }

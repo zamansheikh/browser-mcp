@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icons/icon32.png" alt="" width="20" height="20">
+    <h1>Browser MCP</h1>
+  </header>
+
+  <section class="status">
+    <span id="dot" class="dot"></span>
+    <div>
+      <div id="state">Checking…</div>
+      <div id="detail" class="muted"></div>
+    </div>
+  </section>
+
+  <section>
+    <label for="port">Server port</label>
+    <div class="row">
+      <input id="port" type="number" min="1" max="65535">
+      <button id="save">Save</button>
+      <button id="reconnect" class="secondary">Retry</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="row between">
+      <h2>Controlled tabs</h2>
+      <button id="detachAll" class="link">Release all</button>
+    </div>
+    <ul id="tabs"></ul>
+  </section>
+
+  <footer class="muted">Agents attach to tabs through the debugger, so Chrome shows a "started debugging" bar on those tabs. Release a tab to stop control.</footer>
+  <script src="popup.js"></script>
+</body>
+</html>
