@@ -119,16 +119,15 @@ Tick all three certifications:
 
 ## 4. Test instructions (for the reviewer)
 
-No login is needed. Paste into "Additional instructions":
+No login is needed. Paste into "Additional instructions" (431 of 500 characters):
 
 ```
-Pagewright needs its companion local server, which is open source. To test without any AI app:
-1. Install Node.js 18+ (https://nodejs.org) and git.
-2. With Chrome open and Pagewright installed, run in a terminal:
-   npx -y github:zamansheikh/browser-mcp check
-3. The command waits for the extension, opens https://example.com in a background tab, reads the page structure, prints it, and closes the tab. The extension icon shows "ON" while connected, and the popup lists the controlled tab.
-To test with an AI app, run "npx -y github:zamansheikh/browser-mcp setup" and follow the printed steps.
-Source: https://github.com/zamansheikh/browser-mcp
+Needs the open-source local server: github.com/zamansheikh/browser-mcp
+1. Install Node.js 18+ and git.
+2. With Chrome open and Pagewright installed, run:
+npx -y github:zamansheikh/browser-mcp check
+3. It waits for the extension, opens example.com in a background tab, prints the page structure, then closes the tab. The icon shows ON while connected.
+To use it with an AI app, run the same command with "setup" instead of "check".
 ```
 
 ## 5. Distribution
