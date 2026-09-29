@@ -10,7 +10,7 @@ const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url),
 
 if (process.argv[2] === 'check') {
   const { check } = await import('./check.js');
-  process.exit(await check());
+  process.exit(await check(process.argv.slice(3)));
 }
 
 if (process.argv[2] === 'setup') {
@@ -28,6 +28,9 @@ Usage:
                          [--no-claude] [--no-open]
   browser-mcp check      verify the extension connects and can read a page (no AI app needed)
 
+Options:
+  --port PORT                  WebSocket port (overrides BROWSER_MCP_PORT)
+
 Environment:
   BROWSER_MCP_PORT             WebSocket port shared with the extension (default 18800)
   BROWSER_MCP_CONNECT_TIMEOUT  ms to wait for the extension before failing a call (default 20000)
@@ -35,8 +38,9 @@ Environment:
   process.exit(0);
 }
 
+const portIndex = process.argv.indexOf('--port');
 const bridge = new Bridge({
-  port: Number(process.env.BROWSER_MCP_PORT) || 18800,
+  port: Number(portIndex === -1 ? process.env.BROWSER_MCP_PORT : process.argv[portIndex + 1]) || 18800,
   connectTimeout: Number(process.env.BROWSER_MCP_CONNECT_TIMEOUT) || 20000,
   extensionIds: (process.env.BROWSER_MCP_EXTENSION_IDS || '').split(',').map((s) => s.trim()).filter(Boolean),
 });
