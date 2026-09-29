@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest a new tool or an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the task your agent couldn't do, or did badly.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help?
+      description: A new tool, a new parameter, better output… If you have a tool name and parameters in mind, include them.
+  - type: checkboxes
+    id: pr
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to implement this myself (see CONTRIBUTING.md)

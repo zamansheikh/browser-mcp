@@ -21,6 +21,8 @@ const outDir = process.env.E2E_OUT || mkdtempSync(join(tmpdir(), 'browser-mcp-ou
 const PORT = 18911;
 const WS_PORT = Number(process.env.BROWSER_MCP_PORT) || 18800;
 const BIN = process.env.BROWSER_BIN;
+// Extra browser flags, e.g. --no-sandbox on CI runners.
+const EXTRA_ARGS = (process.env.E2E_CHROME_ARGS || '').split(' ').filter(Boolean);
 if (!BIN || !existsSync(BIN)) {
   console.error('Set BROWSER_BIN to a Chromium/Chrome-for-Testing binary that allows --load-extension.');
   process.exit(2);
@@ -47,7 +49,7 @@ const browser = spawn(BIN, [
   `--load-extension=${join(root, 'extension')}`,
   `--disable-extensions-except=${join(root, 'extension')}`,
   '--no-first-run', '--no-default-browser-check', '--disable-search-engine-choice-screen',
-  '--window-size=1280,900', 'about:blank',
+  '--window-size=1280,900', ...EXTRA_ARGS, 'about:blank',
 ], { stdio: 'ignore' });
 
 // --------------------------------------------------------------- MCP client
@@ -267,7 +269,7 @@ try {
   // Keep last: kills the first browser.
   await test('second browser waits on standby, then takes over', async () => {
     const profile2 = mkdtempSync(join(tmpdir(), 'browser-mcp-profile-'));
-    browser2 = spawn(BIN, [`--user-data-dir=${profile2}`, `--load-extension=${join(root, 'extension')}`, '--no-first-run', '--no-default-browser-check', 'about:blank'], { stdio: 'ignore' });
+    browser2 = spawn(BIN, [`--user-data-dir=${profile2}`, `--load-extension=${join(root, 'extension')}`, '--no-first-run', '--no-default-browser-check', ...EXTRA_ARGS, 'about:blank'], { stdio: 'ignore' });
     const until = async (pred, ms) => {
       const t0 = Date.now();
       while (Date.now() - t0 < ms) { const st = JSON.parse((await call('browser_status')).txt); if (pred(st)) return st; await new Promise((r) => setTimeout(r, 500)); }

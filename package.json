@@ -1,7 +1,7 @@
 {
   "name": "browser-mcp",
   "version": "1.0.1",
-  "description": "MCP server + browser extension that lets any AI agent see and control your real Chrome/Brave/Edge browser: snapshots, screenshots, clicks, layout audits, console/network, and web scraping.",
+  "description": "Pagewright: let AI agents see and control your real Chrome/Brave/Edge through MCP. Page snapshots, screenshots, real clicks, layout audits, CSS debugging and web scraping.",
   "type": "module",
   "bin": {
     "browser-mcp": "server/index.js"
@@ -9,10 +9,14 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "icons": "node scripts/make-icons.mjs",
+    "test": "node test/smoke.mjs && node scripts/gen-docs.mjs --check",
     "test:e2e": "node test/e2e.mjs",
+    "docs": "node scripts/gen-docs.mjs",
+    "check-syntax": "node scripts/check-syntax.mjs",
     "build:store": "node scripts/build-store.mjs",
-    "store:assets": "node scripts/store-assets.mjs"
+    "store:assets": "node scripts/store-assets.mjs",
+    "demo:gif": "node scripts/demo-gif.mjs",
+    "icons": "node scripts/make-icons.mjs"
   },
   "engines": {
     "node": ">=18"
@@ -31,11 +35,16 @@
   "keywords": [
     "mcp",
     "model-context-protocol",
-    "browser",
+    "mcp-server",
+    "browser-automation",
     "chrome-extension",
-    "claude",
     "web-scraping",
-    "automation"
+    "ai-agents",
+    "llm",
+    "devtools",
+    "frontend",
+    "accessibility",
+    "claude"
   ],
   "files": [
     "server",

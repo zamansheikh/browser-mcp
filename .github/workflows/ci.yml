@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run check-syntax
+      - run: npm test
+      - run: npm run build:store
+
+  e2e:
+    name: End-to-end (real browser)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chrome for Testing
+        run: |
+          npx -y @puppeteer/browsers install chrome@stable --path "$HOME/cft"
+          echo "BROWSER_BIN=$(ls "$HOME"/cft/chrome/*/chrome-linux64/chrome)" >> "$GITHUB_ENV"
+      - name: Run end-to-end tests
+        env:
+          E2E_OUT: ${{ runner.temp }}/e2e
+          E2E_CHROME_ARGS: --no-sandbox
+        run: |
+          mkdir -p "$E2E_OUT"
+          xvfb-run --auto-servernum npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-artifacts
+          path: ${{ runner.temp }}/e2e

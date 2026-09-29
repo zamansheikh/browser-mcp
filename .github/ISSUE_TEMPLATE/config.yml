@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/zamansheikh/browser-mcp/discussions
+    about: Ask how to do something, share what you built, or discuss ideas.
+  - name: Security vulnerability
+    url: https://github.com/zamansheikh/browser-mcp/security/advisories/new
+    about: Please report security problems privately.

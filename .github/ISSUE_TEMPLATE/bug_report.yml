@@ -1,0 +1,57 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! Please check [existing issues](https://github.com/zamansheikh/browser-mcp/issues) first. For security problems, use [private reporting](https://github.com/zamansheikh/browser-mcp/security/advisories/new) instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Include the tool call (name and arguments) and the output or error you got.
+      placeholder: |
+        browser_click { "ref": "e12" }
+        → Error: …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How can we reproduce it?
+      description: A public URL, or a minimal HTML snippet that shows the problem, is the most helpful thing you can add.
+  - type: input
+    id: version
+    attributes:
+      label: Pagewright version
+      description: Shown in the extension card at chrome://extensions, or by browser_status.
+      placeholder: 1.0.1
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How is the extension installed?
+      options:
+        - Chrome Web Store
+        - Load unpacked (npx … setup or a clone)
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 154, macOS 16
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: AI app (MCP client)
+      placeholder: Claude Code, Cursor, …
