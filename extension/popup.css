@@ -8,7 +8,7 @@ h2 { font-size: 12px; margin: 0; text-transform: uppercase; letter-spacing: .04e
 section { padding: 10px 0; border-top: 1px solid var(--line); }
 .status { display: flex; gap: 10px; align-items: flex-start; border-top: 0; }
 .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); margin-top: 4px; flex: none; }
-.dot.connected { background: var(--ok); } .dot.connecting { background: var(--warn); } .dot.disconnected { background: var(--bad); }
+.dot.connected { background: var(--ok); } .dot.connecting { background: var(--warn); } .dot.standby { background: var(--muted); } .dot.disconnected { background: var(--bad); }
 #state { font-weight: 600; }
 .muted { color: var(--muted); font-size: 12px; }
 label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }

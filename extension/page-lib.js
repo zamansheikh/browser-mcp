@@ -2,7 +2,7 @@
 // pageLib is serialized with Function.prototype.toString, so it must stay
 // self-contained: no imports, no references to anything outside its body.
 
-export const PAGE_LIB_VERSION = 5;
+export const PAGE_LIB_VERSION = 6;
 
 export function pageLib(VERSION) {
   if (window.__browserMcp && window.__browserMcp.v === VERSION) return;
@@ -294,8 +294,10 @@ export function pageLib(VERSION) {
     for (const node of childNodesOf(el)) {
       if (node.nodeType === 3) {
         if (opts.interactiveOnly) continue;
-        const t = clean(node.textContent);
-        if (t) items.push({ text: t });
+        const raw = node.textContent;
+        const t = clean(raw);
+        if (t) items.push({ text: t, lead: /^\s/.test(raw), trail: /\s$/.test(raw) });
+        else if (raw) items.push({ space: true });
         continue;
       }
       if (node.nodeType !== 1 || SKIP_TAGS.has(node.tagName)) continue;
@@ -310,7 +312,7 @@ export function pageLib(VERSION) {
         const item = { role: role || 'clickable', ref: refFor(node), attrs: interactiveAttrs(node, role) };
         if (!role) {
           // Non-semantic clickable (div with a click handler / cursor:pointer).
-          const kids = build(node, opts, depth + 1);
+          const kids = mergeText(build(node, opts, depth + 1));
           const onlyText = kids.every((k) => k.text);
           const txt = kids.map((k) => k.text).join(' ');
           if (onlyText && txt.length <= 100) item.name = txt;
@@ -340,22 +342,39 @@ export function pageLib(VERSION) {
         const kids = build(node, opts, depth + 1);
         const name = ['navigation', 'region', 'dialog', 'form', 'group', 'table'].includes(role)
           ? clean(node.getAttribute('aria-label') || '', 60) : '';
-        if (kids.length) items.push({ role, name, attrs: [], children: kids });
+        if (kids.some((k) => !k.space)) items.push({ role, name, attrs: [], children: kids });
         continue;
       }
+      // Generic element: flatten. Block boxes separate words; inline ones don't.
+      const block = !getComputedStyle(node).display.startsWith('inline');
+      if (block) items.push({ space: true });
       items.push(...build(node, opts, depth + 1));
+      if (block) items.push({ space: true });
     }
     return items;
   }
 
-  function serialize(items, indent, out, budget) {
-    // Merge adjacent text items.
+  // Join adjacent text runs, adding a space only where the page has whitespace
+  // or a block boundary (so "<b>Hel</b>lo" stays "Hello").
+  function mergeText(items) {
     const merged = [];
+    let gap = false;
     for (const it of items) {
+      if (it.space) { gap = true; continue; }
       const last = merged[merged.length - 1];
-      if (it.text && last && last.text) last.text += ' ' + it.text;
-      else merged.push(it.text ? { text: it.text } : it);
+      if (it.text && last && last.text) {
+        last.text += (gap || last.trail || it.lead ? ' ' : '') + it.text;
+        last.trail = it.trail;
+      } else {
+        merged.push(it.text ? { text: it.text, trail: it.trail } : it);
+      }
+      gap = false;
     }
+    return merged;
+  }
+
+  function serialize(items, indent, out, budget) {
+    const merged = mergeText(items);
     const pad = '  '.repeat(indent);
     for (const it of merged) {
       if (budget.used > budget.max) return;
@@ -367,7 +386,7 @@ export function pageLib(VERSION) {
         if (it.name) line += ` ${JSON.stringify(it.name)}`;
         if (it.attrs && it.attrs.length) line += ` [${it.attrs.join('] [')}]`;
         if (it.ref) line += ` [ref=${it.ref}]`;
-        const kids = it.children || [];
+        const kids = mergeText(it.children || []);
         if (kids.length && kids.every((k) => k.text)) {
           line += ': ' + clean(kids.map((k) => k.text).join(' '), 300);
         } else if (kids.length) {

@@ -1,5 +1,5 @@
 // Draws the extension icon (rounded indigo square with a white pointer) as PNGs.
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 
 const crcTable = Array.from({ length: 256 }, (_, n) => {
@@ -30,7 +30,7 @@ const inRoundRect = (x, y, r) => {
   return (x - cx) ** 2 + (y - cy) ** 2 <= r * r;
 };
 
-function png(size) {
+function png(size, pad = 0) {
   const SS = 4;
   const raw = Buffer.alloc(size * (size * 4 + 1));
   for (let py = 0; py < size; py++) {
@@ -38,7 +38,9 @@ function png(size) {
     for (let px = 0; px < size; px++) {
       let r = 0, g = 0, b = 0, a = 0;
       for (let sy = 0; sy < SS; sy++) for (let sx = 0; sx < SS; sx++) {
-        const x = (px + (sx + 0.5) / SS) / size, y = (py + (sy + 0.5) / SS) / size;
+        // pad: transparent margin as a fraction of the canvas (store icon wants 16px of 128).
+        const x = ((px + (sx + 0.5) / SS) / size - pad) / (1 - 2 * pad), y = ((py + (sy + 0.5) / SS) / size - pad) / (1 - 2 * pad);
+        if (x < 0 || y < 0 || x > 1 || y > 1) continue;
         if (!inRoundRect(x, y, 0.22)) continue;
         if (inPoly(x, y, ARROW)) { r += 255; g += 255; b += 255; }
         else { const t = (x + y) / 2; r += 79 + (124 - 79) * t; g += 70 + (58 - 70) * t; b += 229 + (237 - 229) * t; }
@@ -54,4 +56,6 @@ function png(size) {
 }
 
 for (const s of [16, 32, 48, 128]) writeFileSync(new URL(`../extension/icons/icon${s}.png`, import.meta.url), png(s));
+mkdirSync(new URL('../store/images/', import.meta.url), { recursive: true });
+writeFileSync(new URL('../store/images/store-icon-128.png', import.meta.url), png(128, 16 / 128));
 console.log('icons written');

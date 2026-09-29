@@ -20,7 +20,7 @@ export function setup(argv) {
   const skipClaude = argv.includes('--no-claude');
   const say = (s = '') => console.log(s);
 
-  say(`Installing Browser MCP into ${home}`);
+  say(`Installing Pagewright (browser-mcp) into ${home}`);
   if (src.replace(/[\\/]$/, '') !== home.replace(/[\\/]$/, '')) {
     mkdirSync(home, { recursive: true });
     for (const part of ['server', 'extension']) {

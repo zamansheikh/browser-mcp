@@ -294,7 +294,8 @@ export const TOOLS = [
   },
   {
     name: 'browser_evaluate',
-    description: 'Run JavaScript in the page and return the JSON result. Supports top-level await. Example: "document.querySelectorAll(\'a\').length".',
+    description: 'Run JavaScript in the page and return the JSON result. Supports top-level await. Example: "document.querySelectorAll(\'a\').length". ' +
+      'Not available when the extension was installed from the Chrome Web Store (browser_status shows evaluateAvailable); prefer the other tools.',
     inputSchema: { type: 'object', properties: { tabId, expression: { type: 'string' } }, required: ['expression'] },
     async handler(a, { bridge }) {
       const r = await bridge.call('evaluate', a);

@@ -61,6 +61,7 @@ const client = new Client({ name: 'e2e', version: '0' });
 await client.connect(transport);
 
 let failures = 0;
+let browser2;
 const results = [];
 async function call(name, args = {}) {
   const r = await client.callTool({ name, arguments: args });
@@ -262,11 +263,30 @@ try {
   await test('error for unknown ref is helpful', async () => {
     try { await call('browser_click', { ref: 'e99999' }); throw new Error('no error'); } catch (e) { expect(/take a new browser_snapshot/.test(e.message), e.message); }
   });
+
+  // Keep last: kills the first browser.
+  await test('second browser waits on standby, then takes over', async () => {
+    const profile2 = mkdtempSync(join(tmpdir(), 'browser-mcp-profile-'));
+    browser2 = spawn(BIN, [`--user-data-dir=${profile2}`, `--load-extension=${join(root, 'extension')}`, '--no-first-run', '--no-default-browser-check', 'about:blank'], { stdio: 'ignore' });
+    const until = async (pred, ms) => {
+      const t0 = Date.now();
+      while (Date.now() - t0 < ms) { const st = JSON.parse((await call('browser_status')).txt); if (pred(st)) return st; await new Promise((r) => setTimeout(r, 500)); }
+      throw new Error('condition not reached: ' + (await call('browser_status')).txt);
+    };
+    await until((st) => st.standbyBrowsers && st.standbyBrowsers.length === 1, 40000);
+    const title = (await call('browser_evaluate', { expression: 'document.title' })).txt;
+    expect(/Fixture/.test(title), 'commands went to the standby browser: ' + title);
+    browser.kill();
+    await until((st) => st.extensionConnected && !st.standbyBrowsers && st.currentTabId !== undefined, 20000);
+    const href = (await call('browser_evaluate', { expression: 'location.href' })).txt;
+    expect(href === 'about:blank', 'expected the second browser, got ' + href);
+  });
 } finally {
   console.error('\n' + results.join('\n'));
   console.error(`\n${results.length - failures}/${results.length} passed. Artifacts in ${outDir}`);
   await client.close().catch(() => {});
   browser.kill();
+  browser2?.kill();
   http.close();
   setTimeout(() => { rmSync(profile, { recursive: true, force: true }); process.exit(failures ? 1 : 0); }, 800);
 }

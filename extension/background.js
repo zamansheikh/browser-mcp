@@ -1,4 +1,5 @@
 import { pageLib, PAGE_LIB_VERSION } from './page-lib.js';
+import { BUILD } from './build-config.js';
 
 const DEFAULT_PORT = 18800;
 const MAX_LOG = 1000;
@@ -6,7 +7,7 @@ const MAX_REQUESTS = 1000;
 
 // ------------------------------------------------------------------ state
 let ws = null;
-let connState = 'disconnected';
+let connState = 'disconnected'; // disconnected | connecting | connected | standby
 let lastError = null;
 let reconnectTimer = null;
 let reconnectDelay = 1000;
@@ -35,24 +36,40 @@ async function getPort() {
 function setState(s, err) {
   connState = s;
   if (err !== undefined) lastError = err;
-  chrome.action.setBadgeText({ text: s === 'connected' ? 'ON' : '' }).catch(() => {});
-  chrome.action.setBadgeBackgroundColor({ color: '#16a34a' }).catch(() => {});
+  chrome.action.setBadgeText({ text: s === 'connected' ? 'ON' : s === 'standby' ? '···' : '' }).catch(() => {});
+  chrome.action.setBadgeBackgroundColor({ color: s === 'standby' ? '#6b7280' : '#16a34a' }).catch(() => {});
   chrome.runtime.sendMessage({ type: 'statusChanged' }).catch(() => {});
 }
 
+// Identifies this browser profile, so the server can tell a reconnect from a second browser.
+async function getBrowserId() {
+  let { browserId } = await chrome.storage.local.get('browserId');
+  if (!browserId) {
+    browserId = crypto.randomUUID();
+    await chrome.storage.local.set({ browserId });
+  }
+  return browserId;
+}
+
+let connecting = false;
 async function connect() {
-  if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) return;
+  // Startup, install, alarms and the popup can all call this at once.
+  if (connecting || (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN))) return;
+  connecting = true;
   clearTimeout(reconnectTimer);
-  const port = await getPort();
-  let sock;
+  let sock, browserId, port;
   try {
+    port = await getPort();
+    browserId = await getBrowserId();
     sock = new WebSocket(`ws://127.0.0.1:${port}/extension`);
   } catch (e) {
+    connecting = false;
     setState('disconnected', String(e.message || e));
     scheduleReconnect();
     return;
   }
   ws = sock;
+  connecting = false;
   setState('connecting');
   sock.onopen = async () => {
     reconnectDelay = 1000;
@@ -60,6 +77,7 @@ async function connect() {
     const ua = navigator.userAgentData;
     send({
       type: 'hello',
+      browserId,
       extensionVersion: chrome.runtime.getManifest().version,
       browser: ua ? ua.brands.map((b) => `${b.brand} ${b.version}`).join(', ') : navigator.userAgent,
       platform: ua ? ua.platform : navigator.platform,
@@ -71,6 +89,7 @@ async function connect() {
     let msg;
     try { msg = JSON.parse(ev.data); } catch { return; }
     if (msg.type === 'pong') return;
+    if (msg.type === 'role') return setState(msg.role === 'standby' ? 'standby' : 'connected');
     if (msg.id !== undefined && msg.method) handleCommand(msg);
   };
   sock.onerror = () => { lastError = `Cannot reach MCP server on port ${port}. Is an agent running browser-mcp?`; };
@@ -203,16 +222,17 @@ async function page(tabId, fn, args) {
   await attach(tabId);
   const expr = `(() => {
     if (!window.__browserMcp || window.__browserMcp.v !== ${PAGE_LIB_VERSION}) (${pageLib.toString()})(${PAGE_LIB_VERSION});
-    return window.__browserMcp.${fn}(${JSON.stringify(args ?? {})});
+    // Return JSON text: CDP's returnByValue sorts object keys, which would scramble field order.
+    return JSON.stringify(window.__browserMcp.${fn}(${JSON.stringify(args ?? {})}) ?? null);
   })()`;
   const r = await cdp(tabId, 'Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true, userGesture: true });
   if (r.exceptionDetails) throw new Error(exceptionText(r.exceptionDetails));
-  return r.result.value;
+  return JSON.parse(r.result.value);
 }
 
 function exceptionText(d) {
   const desc = d.exception && (d.exception.description || d.exception.value);
-  return String(desc || d.text || 'Evaluation failed').split('\n')[0].replace(/^Uncaught (Error: )?/, '');
+  return String(desc || d.text || 'Evaluation failed').split('\n')[0].replace(/^(Uncaught )?(Error: )?/, '');
 }
 
 // Wait for the tab to finish loading after something may have triggered a navigation.
@@ -467,7 +487,7 @@ function normalizeUrl(url) {
 
 const METHODS = {
   async status() {
-    return { connected: true, currentTabId, controlledTabs: [...tabs.entries()].filter(([, s]) => s.attached).map(([id]) => id) };
+    return { connected: true, build: BUILD.channel, evaluateAvailable: BUILD.allowEvaluate, currentTabId, controlledTabs: [...tabs.entries()].filter(([, s]) => s.attached).map(([id]) => id) };
   },
 
   async tabs({ action = 'list', tabId, url, background }) {
@@ -679,6 +699,10 @@ const METHODS = {
   },
 
   async evaluate({ tabId, expression }) {
+    if (!BUILD.allowEvaluate) {
+      throw new Error('browser_evaluate is not available in the Chrome Web Store version of Pagewright (store extensions may not run code they did not ship with). ' +
+        'Use browser_snapshot, browser_get_content, browser_extract or browser_inspect instead, or install the developer build from https://github.com/zamansheikh/browser-mcp.');
+    }
     const tab = await resolveTab(tabId);
     await attach(tab.id);
     const r = await cdp(tab.id, 'Runtime.evaluate', {

@@ -1,4 +1,4 @@
-# Browser MCP
+# Pagewright (browser-mcp)
 
 Let any AI agent (Claude Code, Claude Desktop, Cursor, Windsurf, VS Code Copilot, anything that speaks MCP) **see and control your real browser**: read pages, click and type, take screenshots, debug layouts, and scrape data. It uses your normal Chrome/Brave/Edge profile, so logged-in sites work.
 
@@ -17,7 +17,7 @@ You need [Node.js 18+](https://nodejs.org), [git](https://git-scm.com), and Chro
 npx -y github:zamansheikh/browser-mcp setup
 ```
 
-This installs Browser MCP into `~/.browser-mcp`. If [Claude Code](https://claude.com/claude-code) is installed, it also registers the server there for all projects. Otherwise it prints the config to paste into your AI app. It then opens the extension folder.
+This installs Pagewright (browser-mcp) into `~/.browser-mcp`. If [Claude Code](https://claude.com/claude-code) is installed, it also registers the server there for all projects. Otherwise it prints the config to paste into your AI app. It then opens the extension folder.
 
 **2. Load the extension (one time):**
 
@@ -151,6 +151,10 @@ Every agent session starts its own `browser-mcp` process. The first one owns por
 - Console and network capture start when an agent first touches a tab. Reload to capture a page's initial load.
 - Only one debugger client can attach per tab while DevTools is open on that tab in some browser versions. Close DevTools if attaching fails.
 
+## Chrome Web Store build
+
+`npm run build:store` packs `extension/` into `dist/pagewright-<version>.zip`. That package is identical to this repo's extension except that `browser_evaluate` is disabled: store extensions may not run code they didn't ship with. `browser_status` reports `evaluateAvailable`. The listing text, privacy answers and images are in [store/LISTING.md](store/LISTING.md), and the privacy policy is in [PRIVACY.md](PRIVACY.md).
+
 ## Development
 
 ```
@@ -160,7 +164,11 @@ server/tools.js      tool definitions and scraping orchestration
 extension/           Manifest V3 extension (service worker, popup)
 extension/page-lib.js  code injected into pages: snapshot, audit, inspect, extract, markdown
 test/e2e.mjs         end-to-end test against test/fixture
+scripts/             icons, store package, store screenshots (scripts/store-assets.mjs)
+store/               listing text, demo shop used for screenshots, final images
 ```
+
+Self-test without an AI app: `node server/index.js check`.
 
 Run the end-to-end test. It needs a browser build that still honors `--load-extension`, which branded Chrome/Brave 137+ no longer do, so use Chrome for Testing:
 

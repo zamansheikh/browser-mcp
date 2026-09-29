@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const LABELS = { connected: 'Connected to MCP server', connecting: 'Connecting…', disconnected: 'Not connected' };
+const LABELS = { connected: 'Connected to MCP server', standby: 'Standby', connecting: 'Connecting…', disconnected: 'Not connected' };
 
 async function refresh() {
   const s = await chrome.runtime.sendMessage({ type: 'getStatus' });
@@ -8,7 +8,9 @@ async function refresh() {
   $('state').textContent = LABELS[s.state] || s.state;
   $('detail').textContent = s.state === 'connected'
     ? `ws://127.0.0.1:${s.port} · ${s.commandCount} commands this session`
-    : s.lastError || `Waiting for an agent to start browser-mcp on port ${s.port}.`;
+    : s.state === 'standby'
+      ? 'Another browser with Pagewright is active. This one takes over if that browser closes.'
+      : s.lastError || `Waiting for an agent to start browser-mcp on port ${s.port}.`;
   if (document.activeElement !== $('port')) $('port').value = s.port;
   const ul = $('tabs');
   ul.replaceChildren();

@@ -19,8 +19,9 @@ export class Bridge {
     this.seq = 0;
     this.pending = new Map(); // id -> { resolve, reject, timer } (our own calls)
     this.relayed = new Map(); // hub id -> { sock, id } (calls relayed for other agents)
-    this.extension = null;
-    this.extensionInfo = null;
+    // Connected browsers. The first is active; the rest wait on standby (e.g.
+    // Pagewright installed in both Chrome and Brave) and take over in order.
+    this.browsers = []; // { sock, info }
     this.agents = new Set();
     this.hubSock = null;
     this.waiters = [];
@@ -35,6 +36,9 @@ export class Bridge {
     }
   }
 
+  get extension() { return this.browsers[0]?.sock || null; }
+  get extensionInfo() { return this.browsers[0]?.info || null; }
+
   close() {
     this.closed = true;
     this.wss?.close();
@@ -47,6 +51,7 @@ export class Bridge {
       port: this.port,
       extensionConnected: this.mode === 'hub' ? !!this.extension : undefined,
       extension: this.extensionInfo || undefined,
+      standbyBrowsers: this.browsers.length > 1 ? this.browsers.slice(1).map((b) => b.info?.browser || 'connecting') : undefined,
       otherAgents: this.mode === 'hub' ? this.agents.size : undefined,
     };
   }
@@ -96,18 +101,29 @@ export class Bridge {
     });
   }
 
+  #announceRoles() {
+    this.browsers.forEach((b, i) => {
+      if (b.sock.readyState === WebSocket.OPEN) b.sock.send(JSON.stringify({ type: 'role', role: i === 0 ? 'active' : 'standby' }));
+    });
+  }
+
   #onExtension(sock) {
-    if (this.extension && this.extension !== sock) {
-      log('a new extension connection replaced the previous one');
-      this.extension.close(1000, 'replaced');
-    }
-    this.extension = sock;
+    const entry = { sock, info: null };
+    this.browsers.push(entry);
     sock.on('message', (data) => {
       let msg;
       try { msg = JSON.parse(data); } catch { return; }
       if (msg.type === 'hello') {
-        this.extensionInfo = { browser: msg.browser, platform: msg.platform, extensionVersion: msg.extensionVersion };
-        log(`extension connected (${msg.browser})`);
+        entry.info = { browser: msg.browser, platform: msg.platform, extensionVersion: msg.extensionVersion, browserId: msg.browserId };
+        // Same browser reconnecting (e.g. its service worker restarted): take over the old slot.
+        const old = msg.browserId && this.browsers.find((b) => b !== entry && b.info?.browserId === msg.browserId);
+        if (old) {
+          this.browsers = this.browsers.filter((b) => b !== entry).map((b) => (b === old ? entry : b));
+          old.sock.close(1000, 'replaced by a newer connection from the same browser');
+        }
+        const active = this.browsers[0] === entry;
+        log(`extension connected (${msg.browser})${active ? '' : ' — on standby, another browser is active'}`);
+        this.#announceRoles();
         this.#wake();
         return;
       }
@@ -122,10 +138,11 @@ export class Bridge {
       this.#settle(msg);
     });
     sock.on('close', () => {
-      if (this.extension !== sock) return;
-      this.extension = null;
-      this.extensionInfo = null;
-      log('extension disconnected');
+      const wasActive = this.browsers[0] === entry;
+      this.browsers = this.browsers.filter((b) => b !== entry);
+      if (!wasActive) return;
+      log(`extension disconnected${this.browsers.length ? '; switching to the next connected browser' : ''}`);
+      this.#announceRoles();
       const err = 'Browser extension disconnected while handling the request';
       for (const [id, p] of this.pending) { clearTimeout(p.timer); p.reject(new Error(err)); this.pending.delete(id); }
       for (const [id, r] of this.relayed) {
@@ -252,7 +269,7 @@ export class Bridge {
 }
 
 const NOT_CONNECTED = (port) =>
-  `The Browser MCP extension is not connected (waited on port ${port}). Make sure Chrome/Brave/Edge is open with the "Browser MCP Bridge" extension loaded ` +
-  `(chrome://extensions → Developer mode → Load unpacked → the extension/ folder), and that its popup shows the same port.`;
+  `The Pagewright browser extension is not connected (waited on port ${port}). Make sure Chrome/Brave/Edge is open with the Pagewright extension ` +
+  `installed and enabled, and that its popup shows the same port. Install: https://github.com/zamansheikh/browser-mcp#install`;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

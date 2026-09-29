@@ -8,6 +8,11 @@ import { TOOLS } from './tools.js';
 
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 
+if (process.argv[2] === 'check') {
+  const { check } = await import('./check.js');
+  process.exit(await check());
+}
+
 if (process.argv[2] === 'setup') {
   const { setup } = await import('./setup.js');
   setup(process.argv.slice(3));
@@ -15,12 +20,13 @@ if (process.argv[2] === 'setup') {
 }
 
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
-  console.log(`browser-mcp ${pkg.version} — MCP server that controls your browser through the Browser MCP Bridge extension.
+  console.log(`browser-mcp ${pkg.version} — MCP server that controls your browser through the Pagewright extension.
 
 Usage:
   browser-mcp            speak MCP over stdio (launch it from your agent's MCP config)
   browser-mcp setup      install to ~/.browser-mcp, register with Claude Code, show extension steps
                          [--no-claude] [--no-open]
+  browser-mcp check      verify the extension connects and can read a page (no AI app needed)
 
 Environment:
   BROWSER_MCP_PORT             WebSocket port shared with the extension (default 18800)
